@@ -1,6 +1,9 @@
 const { ApolloServer, gql } = require("apollo-server");
+const { GraphQLScalarType } = require("graphql");
+const { Kind } = require("graphql/language");
 
 const typeDefs = gql`
+    scalar Date
 
     enum Status {
         WATCHED
@@ -24,7 +27,7 @@ const typeDefs = gql`
     type Episode {
         id: ID!
         title: String
-        originalAirDate: String
+        originalAirDate: Date
         rating: Float
         status: Status
         series: String
@@ -47,7 +50,7 @@ const episodes = [
     {
         id: "00001990",
         title: "Rose",
-        originalAirDate: "3-26-2005",
+        originalAirDate: new Date("3-26-2005"),
         rating: 7.5,
         series: "Reboot: 1",
         seriesEpisode: 1,
@@ -62,7 +65,7 @@ const episodes = [
     {
         id: "00001991",
         title: "The End of the World",
-        originalAirDate: "4-2-2005",
+        originalAirDate: new Date("4-2-2005"),
         rating: 7.5,
         series: "Reboot: 1",
         seriesEpisode: 2,
@@ -77,7 +80,7 @@ const episodes = [
     {
         id: "00001992",
         title: "The Unquiet Dead",
-        originalAirDate: "4-9-2005",
+        originalAirDate: new Date("4-9-2005"),
         rating: 7.5,
         series: "Reboot: 1",
         seriesEpisode: 3,
@@ -92,7 +95,7 @@ const episodes = [
     {
         id: "00001993",
         title: "Aliens of London",
-        originalAirDate: "4-16-2005",
+        originalAirDate: new Date("4-16-2005"),
         rating: 7.0,
         series: "Reboot: 1",
         seriesEpisode: 4,
@@ -107,7 +110,7 @@ const episodes = [
     {
         id: "00001994",
         title: "Dalek",
-        originalAirDate: "4-30-2005",
+        originalAirDate: new Date("4-30-2005"),
         rating: 8.7,
         series: "Reboot: 1",
         seriesEpisode: 6,
@@ -122,7 +125,7 @@ const episodes = [
     {
         id: "00001995",
         title: "The Long Game",
-        originalAirDate: "5-7-2005",
+        originalAirDate: new Date("5-7-2005"),
         rating: 7.1,
         series: "Reboot: 1",
         seriesEpisode: 7,
@@ -137,7 +140,7 @@ const episodes = [
     {
         id: "00001996",
         title: "Father's Day",
-        originalAirDate: "5-14-2005",
+        originalAirDate: new Date("5-14-2005"),
         rating: 8.4,
         series: "Reboot: 1",
         seriesEpisode: 8,
@@ -152,7 +155,7 @@ const episodes = [
     {
         id: "00001997",
         title: "The Empty Child",
-        originalAirDate: "5-21-2005",
+        originalAirDate: new Date("5-21-2005"),
         rating: 9.2,
         series: "Reboot: 1",
         seriesEpisode: 9,
@@ -167,7 +170,7 @@ const episodes = [
     {
         id: "00001998",
         title: "The Doctor Dances",
-        originalAirDate: "5-28-2005",
+        originalAirDate: new Date("5-28-2005"),
         rating: 9.1,
         series: "Reboot: 1",
         seriesEpisode: 10,
@@ -182,7 +185,7 @@ const episodes = [
     {
         id: "00001999",
         title: "Boom Town",
-        originalAirDate: "6-4-2005",
+        originalAirDate: new Date("6-4-2005"),
         rating: 7.1,
         series: "Reboot: 1",
         seriesEpisode: 11,
@@ -197,7 +200,7 @@ const episodes = [
     {
         id: "00002000",
         title: "Bad Wolf",
-        originalAirDate: "6-11-2005",
+        originalAirDate: new Date("6-11-2005"),
         rating: 8.7,
         series: "Reboot: 1",
         seriesEpisode: 12,
@@ -212,7 +215,7 @@ const episodes = [
     {
         id: "00002001",
         title: "The Parting of Ways",
-        originalAirDate: "6-18-2005",
+        originalAirDate: new Date("6-18-2005"),
         rating: 9.1,
         series: "Reboot: 1",
         seriesEpisode: 13,
@@ -238,7 +241,27 @@ const resolvers = {
             })
             return foundEpisode;
         }
-    }
+    },
+
+    Date: new GraphQLScalarType({
+        name: "Date",
+        description: "Original UK Air Date",
+        parseValue(value) {
+            // value from the client
+            return new Date(value);
+        },
+        serialize(value) {
+            // value sent to client
+            //find another non asshole way to do this
+            return value.getTime();
+        },
+        parseLiteral(ast) {
+            if(ast.kind === Kind.INT) {
+                return new Date(ast.value)
+            }
+            return null;
+        }
+    })
 }
 
 
