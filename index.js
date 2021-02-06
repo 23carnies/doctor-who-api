@@ -37,7 +37,7 @@ const typeDefs = gql`
 
     type Query {
         episodes: [Episode]
-        episode: Episode
+        episode(id: ID): Episode
     }
 
 
@@ -232,8 +232,11 @@ const resolvers = {
         episodes: () => {
             return episodes;
         },
-        episode: () => {
-            return episode[0];
+        episode: (obj,{ id },context,info) => {
+            const foundEpisode = episodes.find((episode) => {
+                return episode.id === id;
+            })
+            return foundEpisode;
         }
     }
 }
@@ -241,6 +244,8 @@ const resolvers = {
 
 const server = new ApolloServer({ typeDefs, resolvers });
 
-server.listen().then(({ url }) => {
+server.listen({
+    port: process.env.PORT || 4000
+}).then(({ url }) => {
     console.log(`Server started at ${url}`);
 });
