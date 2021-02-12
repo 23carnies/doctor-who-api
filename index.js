@@ -31,8 +31,8 @@ const typeDefs = gql`
         rating: Float
         status: Status
         series: String
-        doctor: Doctor
-        companion: Companion
+        doctor: [Doctor]
+        companion: [Companion]
         writer: String
         director: String
         synopsis: String
@@ -43,8 +43,58 @@ const typeDefs = gql`
         episode(id: ID): Episode
     }
 
-
+#  inside parentheses, 
+#  after colon, what is being returned
+    type Mutation {
+        addEpisode(id: ID, title: String, originalAirDate: Date): [Episode]
+    }
 `;
+
+const doctors = [
+    {
+    id: "00009",
+    actor: "Christopher Eccleston",
+    order: 9,
+    },
+    {
+    id: "00010",
+    actor: "David Tennant",
+    order: 10,
+    },
+    {
+    id: "00011",
+    actor: "Matt Smith",
+    order: 11,
+    },
+    {
+    id: "00012",
+    actor: "Peter Capaldi",
+    order: 12,
+    },
+    {
+    id: "00013",
+    actor: "Jodie Whittaker",
+    order: 13,
+    },
+];
+
+const companions = [
+    {
+        id: "00043",
+        name: "Rose Tyler",
+        actor: "Billie Piper",
+    },
+    {
+        id: "00044",
+        name: "Adam Mitchell",
+        actor: "Bruno Langley",
+    },
+    {
+        id: "00045",
+        name: "Captain Jack Harkness",
+        actor: "John Barrowman",
+    },
+]
 
 const episodes = [
     {
@@ -54,10 +104,20 @@ const episodes = [
         rating: 7.5,
         series: "Reboot: 1",
         seriesEpisode: 1,
-        doctorOrder: 9,
-        doctorActor: "Christopher Eccleston",
-        companionName: "Rose",
-        companionActor: "Billie Piper",
+        doctor: [
+            {
+                id: "00009",
+                actor: "Christopher Eccleston",
+                order: 9,
+            }
+        ],
+        companion: [
+            {
+                id: "00043",
+                name: "Rose Tyler",
+                actor: "Billie Piper",
+            }
+        ],
         writer: "Russell T. Davies",
         director: "Keith Boak",
         synopsis: "When ordinary shop-worker Rose Tyler meets a mysterious stranger called the Doctor she is drawn into his strange and dangerous world; her life will never be the same again.",
@@ -69,10 +129,20 @@ const episodes = [
         rating: 7.5,
         series: "Reboot: 1",
         seriesEpisode: 2,
-        doctorOrder: 9,
-        doctorActor: "Christopher Eccleston",
-        companionName: "Rose",
-        companionActor: "Billie Piper",
+        doctor: [
+            {
+                id: "00009",
+                actor: "Christopher Eccleston",
+                order: 9,
+            }
+        ],
+        companion: [
+            {
+                id: "00043",
+                name: "Rose Tyler",
+                actor: "Billie Piper",
+            }
+        ],
         writer: "Russell T. Davies",
         director: "Euros Lyn",
         synopsis: "The Doctor takes Rose to the year 5 billion to witness the destruction of the Earth.",
@@ -84,10 +154,20 @@ const episodes = [
         rating: 7.5,
         series: "Reboot: 1",
         seriesEpisode: 3,
-        doctorOrder: 9,
-        doctorActor: "Christopher Eccleston",
-        companionName: "Rose",
-        companionActor: "Billie Piper",
+        doctor: [
+            {
+                id: "00009",
+                actor: "Christopher Eccleston",
+                order: 9,
+            }
+        ],
+        companion: [
+            {
+                id: "00043",
+                name: "Rose Tyler",
+                actor: "Billie Piper",
+            }
+        ],
         writer: "Mark Gatiss",
         director: "Euros Lyn",
         synopsis: "The Doctor has great expectations for his latest adventure when he and Rose join forces with Charles Dickens to investigate a mysterious plague of zombies.",
@@ -99,10 +179,18 @@ const episodes = [
         rating: 7.0,
         series: "Reboot: 1",
         seriesEpisode: 4,
-        doctorOrder: 9,
-        doctorActor: "Christopher Eccleston",
-        companionName: "Rose",
-        companionActor: "Billie Piper",
+        doctor: [
+            {
+                id: "00009",
+
+            }
+        ],
+        companion: [
+            {
+                id: "00043",
+
+            }
+        ],
         writer: "Russell T. Davies",
         director: "Keith Boak",
         synopsis: "The Doctor has great expectations for his latest adventure when he and Rose join forces with Charles Dickens to investigate a mysterious plague of zombies.",
@@ -129,10 +217,20 @@ const episodes = [
         rating: 7.1,
         series: "Reboot: 1",
         seriesEpisode: 7,
-        doctorOrder: 9,
-        doctorActor: "Christopher Eccleston",
-        companionName: "Rose Tyler",
-        companionActor: "Billie Piper",
+        doctor: [
+            {
+                id: "00009",
+                actor: "Christopher Eccleston",
+                order: 9,
+            }
+        ],
+        companion: [
+            {
+                id: "00043",
+                name: "Rose Tyler",
+                actor: "Billie Piper",
+            }
+        ],
         writer: "Russell T. Davies", 
         director: "Brian Grant",
         synopsis: "In the year 200,000 the Doctor discovers that a satellite with a dark secret is controlling humanity and slowing its development.",
@@ -144,10 +242,20 @@ const episodes = [
         rating: 8.4,
         series: "Reboot: 1",
         seriesEpisode: 8,
-        doctorOrder: 9,
-        doctorActor: "Christopher Eccleston",
-        companionName: "Rose Tyler",
-        companionActor: "Billie Piper",
+        doctor: [
+            {
+                id: "00009",
+                actor: "Christopher Eccleston",
+                order: 9,
+            }
+        ],
+        companion: [
+            {
+                id: "00043",
+                name: "Rose Tyler",
+                actor: "Billie Piper",
+            }
+        ],
         writer: "Paul Cornell", 
         director: "Joe Ahearne",
         synopsis: "Rose asks The Doctor to take her to 1987, on the day her father was killed.",
@@ -159,10 +267,20 @@ const episodes = [
         rating: 9.2,
         series: "Reboot: 1",
         seriesEpisode: 9,
-        doctorOrder: 9,
-        doctorActor: "Christopher Eccleston",
-        companionName: "Rose Tyler",
-        companionActor: "Billie Piper",
+        doctor: [
+            {
+                id: "00009",
+                actor: "Christopher Eccleston",
+                order: 9,
+            }
+        ],
+        companion: [
+            {
+                id: "00043",
+                name: "Rose Tyler",
+                actor: "Billie Piper",
+            }
+        ],
         writer: "Stephen Moffat", 
         director: "James Hawes",
         synopsis: "When a spaceship crashes in the middle of the London Blitz the Doctor, Rose and the enigmatic Captain Jack Harkness find themselves investigating a plague of physical injuries and a little boy in a gas mask.",
@@ -174,10 +292,20 @@ const episodes = [
         rating: 9.1,
         series: "Reboot: 1",
         seriesEpisode: 10,
-        doctorOrder: 9,
-        doctorActor: "Christopher Eccleston",
-        companionName: "Rose Tyler",
-        companionActor: "Billie Piper",
+        doctor: [
+            {
+                id: "00009",
+                actor: "Christopher Eccleston",
+                order: 9,
+            }
+        ],
+        companion: [
+            {
+                id: "00043",
+                name: "Rose Tyler",
+                actor: "Billie Piper",
+            }
+        ],
         writer: "Stephen Moffat", 
         director: "James Hawes",
         synopsis: "The gas mask zombies are on the rise as the plague spreads across war-torn London.",
@@ -189,10 +317,20 @@ const episodes = [
         rating: 7.1,
         series: "Reboot: 1",
         seriesEpisode: 11,
-        doctorOrder: 9,
-        doctorActor: "Christopher Eccleston",
-        companionName: "Rose Tyler",
-        companionActor: "Billie Piper",
+        doctor: [
+            {
+                id: "00009",
+                actor: "Christopher Eccleston",
+                order: 9,
+            }
+        ],
+        companion: [
+            {
+                id: "00043",
+                name: "Rose Tyler",
+                actor: "Billie Piper",
+            }
+        ],
         writer: "Russell T. Davies", 
         director: "Joe Ahearne",
         synopsis: "Stopping off in present-day Cardiff to recharge the TARDIS, The Doctor, Rose and Jack meet up with Mickey and encounter an old foe in the midst of hatching a scheme that could destroy the entire planet.",
@@ -204,10 +342,20 @@ const episodes = [
         rating: 8.7,
         series: "Reboot: 1",
         seriesEpisode: 12,
-        doctorOrder: 9,
-        doctorActor: "Christopher Eccleston",
-        companionName: "Rose Tyler",
-        companionActor: "Billie Piper",
+        doctor: [
+            {
+                id: "00009",
+                actor: "Christopher Eccleston",
+                order: 9,
+            }
+        ],
+        companion: [
+            {
+                id: "00043",
+                name: "Rose Tyler",
+                actor: "Billie Piper",
+            }
+        ],
         writer: "Russell T. Davies", 
         director: "Joe Ahearne",
         synopsis: "The Doctor, Rose and Jack are separated and forced to compete in twisted and deadly games on the Game Station.",
@@ -219,10 +367,20 @@ const episodes = [
         rating: 9.1,
         series: "Reboot: 1",
         seriesEpisode: 13,
-        doctorOrder: 9,
-        doctorActor: "Christopher Eccleston",
-        companionName: "Rose Tyler",
-        companionActor: "Billie Piper",
+        doctor: [
+            {
+                id: "00009",
+                actor: "Christopher Eccleston",
+                order: 9,
+            }
+        ],
+        companion: [
+            {
+                id: "00043",
+                name: "Rose Tyler",
+                actor: "Billie Piper",
+            }
+        ],
         writer: "Russell T. Davies", 
         director: "Joe Ahearne",
         synopsis: "As the Dalek fleet begin their attack on the Earth, the Doctor and his allies make one final stand.",
@@ -240,6 +398,57 @@ const resolvers = {
                 return episode.id === id;
             })
             return foundEpisode;
+        }
+    },
+
+    Episode: {
+        doctor: (obj,arg,context) => {
+            // console.log('episode object',obj)
+            //db call to filter
+            // this doctor refers to the type Doctor
+            const doctorIds = obj.doctor.map(doc => doc.id);
+            const filteredDoctors = doctors.filter(doctor => {
+                return doctorIds.includes(doctor.id)
+            })
+            return filteredDoctors;
+
+        },
+        companion: (obj,arg,context) => {
+            const companionIds = obj.companion.map(comp => comp.id);
+            const filteredCompanions = companions.filter(companion => {
+                return companionIds.includes(companion.id)
+            })
+            return filteredCompanions
+        }
+    },
+
+    // Doctor: (obj, args, context) => {
+    //     console.log('doc',obj);
+    // },
+
+    // Companion: (obj, args, context) => {
+    //     console.log('comp', obj);
+    //     return {
+    //         id: "00043",
+    //         name: "Rose Tyler",
+    //         actor: "Billie Piper",
+    //     };
+    // },
+
+    Mutation: {
+        addEpisode: (obj, { id, title, originalAirDate }, context) => {
+            // do mutation or database stuff
+            const newEpisodesList = [
+                ...episodes,
+                // new episode data
+                {
+                    id, 
+                    title, 
+                    originalAirDate
+                }
+            ]
+            // return data as expected in schema
+            return newEpisodesList;
         }
     },
 
