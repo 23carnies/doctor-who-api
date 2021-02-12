@@ -1,6 +1,50 @@
 const { ApolloServer, gql } = require("apollo-server");
 const { GraphQLScalarType } = require("graphql");
 const { Kind } = require("graphql/language");
+const mongoose = require('mongoose');
+require('dotenv').config();
+
+mongoose.connect(process.env.DATABASE_URL, {
+    useNewUrlParser: true, 
+    useUnifiedTopology: true,
+    useCreateIndex: true,
+    useFindAndModify: false,
+});
+const db = mongoose.connection;
+
+const doctorSchema = new mongoose.Schema ({
+    actor: String,
+    order: Number,
+    quotes: [String],
+},{
+    timestamps: true
+});
+const companionSchema = new mongoose.Schema ({
+    name: String,
+    actor: String,
+    quotes: [String],
+}, {
+    timestamps: true
+});
+
+const episodeSchema = new mongoose.Schema({
+        title: String,
+        originalAirDate: Date,
+        rating: Number,
+        status: String,
+        series: String,
+        doctorIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Episode' }],
+        companionIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Episode' }],
+        writer: String,
+        director: String,
+        synopsis: String,
+}, {
+    timestamps: true
+});
+
+const Episode = mongoose.model('Episode', episodeSchema);
+
+
 
 const typeDefs = gql`
     scalar Date
@@ -43,11 +87,41 @@ const typeDefs = gql`
         episode(id: ID): Episode
     }
 
-#  inside parentheses, 
-#  after colon, what is being returned
-    type Mutation {
-        addEpisode(id: ID, title: String, originalAirDate: Date): [Episode]
+    # input Type doesn't use keyword type tho
+    input EpisodeInput {
+        #contains every possible input
+        id: ID
+        title: String
+        originalAirDate: Date
+        rating: Float
+        status: Status
+        doctor: [DoctorInput]
+        companion: [CompanionInput]
+        writer: String
+        director: String
+        synopsis: String
     }
+
+# These may need only be just the IDs instead of the whole input, not sure yet
+    input DoctorInput {
+        id: ID
+        actor: String
+        order: Int
+    }
+
+    input CompanionInput {
+        id: ID
+        name: String
+        actor: String
+    }
+
+    #  inside parentheses, 
+    #  after colon, what is being returned
+    type Mutation {
+        addEpisode(episode: EpisodeInput): [Episode]
+    }
+
+
 `;
 
 const doctors = [
@@ -390,18 +464,28 @@ const episodes = [
 
 const resolvers = {
     Query: {
-        episodes: () => {
-            return episodes;
+        episodes: async () => {
+            try {
+                const allEpisodes = Episode.find()
+                return allEpisodes;
+            } catch (e) {
+                console.log('e', e);
+                return [];
+            }
         },
-        episode: (obj,{ id },context,info) => {
-            const foundEpisode = episodes.find((episode) => {
-                return episode.id === id;
-            })
-            return foundEpisode;
+        episode: async (obj,{ id }) => {
+            try {
+                const foundEpisode = await Episode.findById(id);
+                return foundEpisode;
+            } catch (e) {
+                console.log('e', e);
+                return {};
+            }
         }
     },
 
     Episode: {
+        // context is anything you want to pass along on every query or mutation
         doctor: (obj,arg,context) => {
             // console.log('episode object',obj)
             //db call to filter
@@ -436,19 +520,20 @@ const resolvers = {
     // },
 
     Mutation: {
-        addEpisode: (obj, { id, title, originalAirDate }, context) => {
+         addEpisode: async (obj, { episode }, context) => {
+            // console.log('context', context)
             // do mutation or database stuff
-            const newEpisodesList = [
-                ...episodes,
-                // new episode data
-                {
-                    id, 
-                    title, 
-                    originalAirDate
-                }
-            ]
-            // return data as expected in schema
-            return newEpisodesList;
+            try {
+                await Episode.create({
+                    ...episode
+                })
+                const allEpisodes = await Episode.find()
+                return allEpisodes;
+            } catch (e) {
+                console.log('e',e);
+                return []
+            }
+            return [episodes];
         }
     },
 
@@ -474,7 +559,26 @@ const resolvers = {
 }
 
 
-const server = new ApolloServer({ typeDefs, resolvers, introspection: true, playground: true });
+const server = new ApolloServer({ 
+    typeDefs, 
+    resolvers, 
+    introspection: true, 
+    playground: true,
+    // can pass context for some auth
+    // context: ({ req }) => {
+    //     const fakeUser = {
+    //         userId: 'heloUser'
+    //     }
+    //     return {
+    //         ...fakeUser
+    //     };
+    // } 
+});
+
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('connected', function() {
+    console.log(`Connected to MongoDB ${db.name} at ${db.host}:${db.port}`);
+});
 
 server.listen({
     port: process.env.PORT || 4000
