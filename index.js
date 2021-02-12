@@ -1,4 +1,4 @@
-const { ApolloServer, gql } = require("apollo-server");
+const { ApolloServer, gql, PubSub } = require("apollo-server");
 const { GraphQLScalarType } = require("graphql");
 const { Kind } = require("graphql/language");
 const mongoose = require('mongoose');
@@ -121,7 +121,9 @@ const typeDefs = gql`
         addEpisode(episode: EpisodeInput): [Episode]
     }
 
-
+    type Subscription {
+        episodeAdded: Episode
+    }
 `;
 
 const doctors = [
@@ -462,7 +464,16 @@ const episodes = [
 
 ];
 
+const pubsub = new PubSub()
+const EPISODE_ADDED = 'EPISODE_ADDED'
+
 const resolvers = {
+    Subscription: {
+        episodeAdded: {
+            subscribe: () => pubsub.asyncIterator([EPISODE_ADDED])
+        }
+    },
+
     Query: {
         episodes: async () => {
             try {
@@ -524,9 +535,10 @@ const resolvers = {
             // console.log('context', context)
             // do mutation or database stuff
             try {
-                await Episode.create({
+                const newEpisode = await Episode.create({
                     ...episode
-                })
+                });
+                pubsub.publish(EPISODE_ADDED, { episodeAdded: newEpisode });
                 const allEpisodes = await Episode.find()
                 return allEpisodes;
             } catch (e) {
