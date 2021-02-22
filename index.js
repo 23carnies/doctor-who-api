@@ -27,17 +27,25 @@ const companionSchema = new mongoose.Schema ({
     timestamps: true
 });
 
+const quoteSchema = new mongoose.Schema ({
+    quote: String,
+    quotee: String,
+})
+
 const episodeSchema = new mongoose.Schema({
         title: String,
         originalAirDate: Date,
         rating: Number,
         status: String,
         series: String,
+        seriesEpisode: Number,
         doctorIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Episode' }],
         companionIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Episode' }],
         writer: String,
         director: String,
         synopsis: String,
+        image: String,
+        quotes: [{type: mongoose.Schema.Types.ObjectId, ref: ''}],
 }, {
     timestamps: true
 });
@@ -49,38 +57,53 @@ const Episode = mongoose.model('Episode', episodeSchema);
 const typeDefs = gql`
     scalar Date
 
-    enum Status {
-        WATCHED
-        INTERESTED
-        NOT_INTERESTED
-        UNKNOWN
-    }
+enum Status {
+    WATCHED
+    INTERESTED
+    NOT_INTERESTED
+    UNKNOWN
+}
 
-    type Doctor {
-        id: ID!
-        actor: String
-        order: Int
-    }
+enum CharType {
+    DOCTOR
+    COMPANION
+    OTHER
+}
 
-    type Companion {
-        id: ID!
-        name: String
-        actor: String
-    }
+type Quotes {
+    id: ID
+    quote: String
+    quotee: String
+    episode: [Episode]
+}
 
-    type Episode {
-        id: ID!
-        title: String
-        originalAirDate: Date
-        rating: Float
-        status: Status
-        series: String
-        doctor: [Doctor]
-        companion: [Companion]
-        writer: String
-        director: String
-        synopsis: String
-    }
+type Character {
+    id: ID
+    name: String
+    actor: String
+    charType: CharType
+    doctorOrder: String
+    doctorInfo: [DoctorInfo]
+    companionInfo: [CompanionInfo]
+    otherInfo: [OtherInfo]
+}
+
+type Episode {
+    id: ID
+    title: String
+    originalAirDate: Date
+    rating: Float
+    status: Status
+    series: String
+    seriesEpisode: Int
+    doctor: [Character]
+    companion: [Character]
+    writer: String
+    director: String
+    synopsis: String
+    image: String
+    quotes: [Quote]
+}
 
     type Query {
         episodes: [Episode]
@@ -95,34 +118,48 @@ const typeDefs = gql`
         originalAirDate: Date
         rating: Float
         status: Status
-        doctor: [DoctorInput]
-        companion: [CompanionInput]
+        series: String
+        seriesEpisode: Int
+        doctor: [Character]
+        companion: [Character]
         writer: String
         director: String
         synopsis: String
+        image: String
+        quotes: [Quote]
     }
 
 # These may need only be just the IDs instead of the whole input, not sure yet
-    input DoctorInput {
+    input QuoteInput {
         id: ID
-        actor: String
-        order: Int
+        quote: String
+        quotee: String
+        episode: [Episode]
     }
 
-    input CompanionInput {
+    input CharacterInput {
         id: ID
         name: String
         actor: String
+        charType: CharType
+        doctorOrder: String
+        doctorInfo: [DoctorInfo]
+        companionInfo: [CompanionInfo]
+        otherInfo: [OtherInfo]
     }
 
     #  inside parentheses, 
     #  after colon, what is being returned
     type Mutation {
-        addEpisode(episode: EpisodeInput): [Episode]
+        addEpisode(episode: EpisodeInput): [Episode],
+        addDoctor(doctor: DoctorInput): [Doctor],
+        addCompanion(companion: CompanionInput): [Companion],
     }
 
     type Subscription {
-        episodeAdded: Episode
+        episodeAdded: Episode,
+        doctorAdded: Doctor,
+        companionAdded: Companion,
     }
 `;
 
@@ -279,9 +316,20 @@ const episodes = [
         series: "Reboot: 1",
         seriesEpisode: 6,
         doctorOrder: 9,
-        doctorActor: "Christopher Eccleston",
-        companionName: "Rose Tyler",
-        companionActor: "Billie Piper",
+        doctor: [
+            {
+                id: "00009",
+                actor: "Christopher Eccleston",
+                order: 9,
+            }
+        ],
+        companion: [
+            {
+                id: "00043",
+                name: "Rose Tyler",
+                actor: "Billie Piper",
+            }
+        ],
         writer: "Robert Shearman", 
         director: "Joe Ahearne",
         synopsis: "The TARDIS is drawn to an alien museum deep below the Utah desert, where a ruthless billionaire keeps prisoner the last of the Doctor's most fearsome enemies.",
@@ -465,7 +513,7 @@ const episodes = [
 ];
 
 const pubsub = new PubSub()
-const EPISODE_ADDED = 'EPISODE_ADDED'
+const EPISODE_ADDED = 'EPISODE_ADDED';
 
 const resolvers = {
     Subscription: {
@@ -517,19 +565,6 @@ const resolvers = {
         }
     },
 
-    // Doctor: (obj, args, context) => {
-    //     console.log('doc',obj);
-    // },
-
-    // Companion: (obj, args, context) => {
-    //     console.log('comp', obj);
-    //     return {
-    //         id: "00043",
-    //         name: "Rose Tyler",
-    //         actor: "Billie Piper",
-    //     };
-    // },
-
     Mutation: {
          addEpisode: async (obj, { episode }, context) => {
             // console.log('context', context)
@@ -546,7 +581,35 @@ const resolvers = {
                 return []
             }
             return [episodes];
-        }
+        },
+
+        addDoctor: async (obj, { doctor }, context) => {
+            try {
+                const newDoctor = await doctor.create({
+                    ...doctor
+                });
+                const allDoctors = await doctor.find()
+                return allDoctors;
+            } catch (e) {
+                console.log('e', e);
+                return ['error']
+            }
+            return [doctors];
+        },
+
+        addCompanion: async (obj, { companion }, context) => {
+            try {
+                const newCompanion = await companion.create({
+                    ...companioin
+                });
+                const allCompanions = await companion.find()
+                return allCompanions;
+            } catch (e) {
+                console.log('e', e);
+                return ['error']
+            }
+            return [companions];
+        },
     },
 
     Date: new GraphQLScalarType({
