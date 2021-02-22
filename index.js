@@ -12,17 +12,16 @@ mongoose.connect(process.env.DATABASE_URL, {
 });
 const db = mongoose.connection;
 
-const doctorSchema = new mongoose.Schema ({
-    actor: String,
-    order: Number,
-    quotes: [String],
-},{
-    timestamps: true
-});
-const companionSchema = new mongoose.Schema ({
+const characterSchema = new mongoose.Schema ({
     name: String,
     actor: String,
-    quotes: [String],
+    quotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Quote' }],
+    charType: {type: String, 
+        enum:['DOCTOR', 'COMPANION', 'OTHER']},
+    doctorOrder: String,
+    doctorInfo: [{type: mongoose.Schema.Types.ObjectId,ref:'DoctorInfo'}],
+    companionInfo: [{type: mongoose.Schema.Types.ObjectId,ref:'CompanionInfo'}],
+    otherInfo: [{type: mongoose.Schema.Types.ObjectId,ref:'otherInfo'}],
 }, {
     timestamps: true
 });
@@ -30,22 +29,26 @@ const companionSchema = new mongoose.Schema ({
 const quoteSchema = new mongoose.Schema ({
     quote: String,
     quotee: String,
+    episode: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Episode' }],
+}, {
+    timestamps: true
 })
 
 const episodeSchema = new mongoose.Schema({
         title: String,
         originalAirDate: Date,
         rating: Number,
-        status: String,
+        status: String, // enum
         series: String,
         seriesEpisode: Number,
-        doctorIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Episode' }],
-        companionIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Episode' }],
+        doctorIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Character' }],
+        companionIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Character' }],
+        otherCharIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Character' }],
         writer: String,
         director: String,
         synopsis: String,
         image: String,
-        quotes: [{type: mongoose.Schema.Types.ObjectId, ref: ''}],
+        quotes: [quoteSchema],
 }, {
     timestamps: true
 });
@@ -98,6 +101,7 @@ type Episode {
     seriesEpisode: Int
     doctor: [Character]
     companion: [Character]
+    otherChar: [Character]
     writer: String
     director: String
     synopsis: String
