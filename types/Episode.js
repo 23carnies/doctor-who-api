@@ -65,7 +65,7 @@ module.exports = gql`
         id: ID!
     }
 
-    type{
+    type Mutation {
         createEpisode(input: CreateEpisodeInpupt!): Episode!
         updateEpisode(id: ID,input: UpdateEpisodeInpupt!): Episode!
         deleteEpisode(id: ID): DeletePayload!
